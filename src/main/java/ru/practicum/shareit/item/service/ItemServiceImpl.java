@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -20,7 +21,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) {
+    public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) throws JsonMappingException {
         return itemRepository.updateItem(fields, itemId, userId);
     }
 

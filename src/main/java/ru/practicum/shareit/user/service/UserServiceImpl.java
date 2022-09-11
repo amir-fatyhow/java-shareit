@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.service;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserDto updateUser(Map<Object,Object> fields, long userId) {
+    public UserDto updateUser(Map<Object,Object> fields, long userId) throws JsonMappingException {
         return userRepository.updateUser(fields,userId);
     }
 

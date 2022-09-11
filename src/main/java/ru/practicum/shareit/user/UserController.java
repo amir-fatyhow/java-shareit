@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -13,46 +14,31 @@ import java.util.Map;
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
-
     private final UserService userService;
 
-    /**
-     * Добавляем нового User
-     */
     @PostMapping
     public UserDto createUser(@Valid @RequestBody User user) {
         return userService.createUser(user);
     }
 
-    /**
-     * Получаем User по id
-     */
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable long id) {
         return userService.getUserById(id);
     }
 
-    /**
-     * Получаем всех User
-     */
     @GetMapping
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    /**
-     * Обновляем User по id
-     */
     @PatchMapping("/{id}")
-    public UserDto updateUser(@PathVariable long id, @RequestBody Map<Object,Object> fields) {
+    public UserDto updateUser(@PathVariable long id, @RequestBody Map<Object,Object> fields) throws JsonMappingException {
         return userService.updateUser(fields, id);
     }
 
-    /**
-     * Удаляем User по id
-     */
     @DeleteMapping("/{userId}")
     public void deleteUser(@PathVariable long userId) {
         userService.deleteUser(userId);
     }
+
 }

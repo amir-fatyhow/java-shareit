@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.service;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -12,7 +13,7 @@ public interface UserService {
 
     UserDto getUserById(long userId);
 
-    UserDto updateUser(Map<Object,Object> fields, long userId);
+    UserDto updateUser(Map<Object,Object> fields, long userId) throws JsonMappingException;
 
     void deleteUser(long userId);
 }

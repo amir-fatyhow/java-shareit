@@ -1,15 +1,14 @@
 package ru.practicum.shareit.item.repository;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.ReflectionUtils;
 import ru.practicum.shareit.exception.NotFound;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemRowMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.repository.UserRepositoryImpl;
-
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +21,14 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     private final UserRepositoryImpl userRepository;
 
+    private final ObjectMapper objectMapper;
+
     private static long id = 0;
 
     @Override
     public ItemDto createItem(Item item, long userId) {
-        if (userRepository.getUsers().stream().noneMatch(user -> user.getId() == userId)) {
+        if (userRepository.getUsers().stream()
+                                     .noneMatch(user -> user.getId() == userId)) {
             throw new NotFound("Пользователя с указанным Id не существует.");
         }
 
@@ -37,32 +39,34 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) {
-        if (items.stream().noneMatch(item -> item.getOwnerId() == userId)) {
+    public ItemDto updateItem(Map<Object, Object> fields, long itemId, long userId) throws JsonMappingException {
+        if (items.stream()
+                 .noneMatch(item -> item.getOwnerId() == userId)) {
             throw new NotFound("Пользователя с указанным Id не существует.");
         }
 
-        Item targetItem = items.stream().filter(item -> item.getId() == itemId).findAny()
-                .orElseThrow(() -> new IllegalArgumentException("Неверно указан Id вещи."));
+        Item targetItem = items.stream()
+                               .filter(item -> item.getId() == itemId)
+                               .findAny()
+                               .orElseThrow(() -> new IllegalArgumentException("Неверно указан Id вещи."));
 
-        fields.forEach((key, value) -> {
-            Field field = ReflectionUtils.findField(Item.class, (String) key);
-            assert field != null;
-            field.setAccessible(true);
-            ReflectionUtils.setField(field, targetItem, value);
-        });
-        return ItemRowMapper.toItemDto(targetItem);
+        return ItemRowMapper.toItemDto(objectMapper.updateValue(targetItem, fields));
     }
 
     @Override
     public ItemDto getItemById(long itemId) {
-        return items.stream().filter(item -> item.getId() == itemId).findFirst().map(ItemRowMapper::toItemDto).get();
+        return items.stream()
+                    .filter(item -> item.getId() == itemId)
+                    .findFirst()
+                    .map(ItemRowMapper::toItemDto)
+                    .get();
     }
 
     @Override
     public List<ItemDto> getAllItemsByUserId(long userId) {
-        return items.stream().filter(item -> item.getOwnerId() == userId)
-                .map(ItemRowMapper::toItemDto).collect(Collectors.toList());
+        return items.stream()
+                    .filter(item -> item.getOwnerId() == userId)
+                    .map(ItemRowMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Override
@@ -70,7 +74,8 @@ public class ItemRepositoryImpl implements ItemRepository {
         return text.isBlank() ? new ArrayList<>() : items.stream()
                 .filter(item -> (item.getName().toLowerCase().contains(text.toLowerCase()) ||
                 item.getDescription().toLowerCase().contains(text.toLowerCase())) && item.getAvailable().equals(true))
-                .map(ItemRowMapper::toItemDto).collect(Collectors.toList());
+                .map(ItemRowMapper::toItemDto)
+                .collect(Collectors.toList());
     }
 
     @Override
