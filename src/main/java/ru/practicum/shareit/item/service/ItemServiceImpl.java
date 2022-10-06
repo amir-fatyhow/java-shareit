@@ -7,16 +7,16 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingLastOrNextDto;
 import ru.practicum.shareit.booking.dto.BookingRowMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.repository.BookingStorage;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
-import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.item.comment.CommentStorage;
 import ru.practicum.shareit.item.comment.CommentRowMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemRowMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.item.repository.ItemStorage;
+import ru.practicum.shareit.user.repository.UserStorage;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,43 +25,43 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final ItemRepository itemRepository;
+    private final ItemStorage itemStorage;
 
-    private final UserRepository userRepository;
+    private final UserStorage userStorage;
 
-    private final BookingRepository bookingRepository;
+    private final BookingStorage bookingStorage;
 
-    private final CommentRepository commentRepository;
+    private final CommentStorage commentStorage;
 
     private final ObjectMapper objectMapper;
 
     @Override
     public ItemDto save(ItemDto itemDto, long ownerId) {
-        if (!userRepository.existsById(ownerId)) {
+        if (!userStorage.existsById(ownerId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
-        Item item = itemRepository.save(ItemRowMapper.toItem(itemDto, ownerId));
+        Item item = itemStorage.save(ItemRowMapper.toItem(itemDto, ownerId));
 
         return ItemRowMapper.toItemDto(item, new BookingLastOrNextDto(), new BookingLastOrNextDto(), new ArrayList<>());
     }
 
     @Override
     public ItemDto update(Map<Object, Object> fields, long itemId, long userId) throws JsonMappingException {
-        if (!itemRepository.existsById(itemId)) {
+        if (!itemStorage.existsById(itemId)) {
             throw new NullPointerException("Вещи с указанным Id не существует.");
         }
 
-        Optional<Item> targetItem = Optional.of(itemRepository.findById(itemId).orElseThrow(NullPointerException::new));
+        Optional<Item> targetItem = Optional.of(itemStorage.findById(itemId).orElseThrow(NullPointerException::new));
 
         if (targetItem.get().getOwnerId() != userId) {
             throw new NullPointerException("Обновлять вещь может только ее владелец.");
         }
 
         Item updateItem = objectMapper.updateValue(targetItem.get(), fields);
-        itemRepository.save(updateItem);
+        itemStorage.save(updateItem);
 
-        Optional<Booking> bookingLast = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
-        Optional<Booking> bookingNext = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
+        Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
+        Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
 
 
         if (bookingLast.isPresent() && bookingNext.isPresent()) {
@@ -75,10 +75,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto findById(long itemId, long userId) {
-        Optional<Item> targetItem = Optional.of(itemRepository.findById(itemId).orElseThrow(NullPointerException::new));
+        Optional<Item> targetItem = Optional.of(itemStorage.findById(itemId).orElseThrow(NullPointerException::new));
 
-        Optional<Booking> bookingLast = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
-        Optional<Booking> bookingNext = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
+        Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
+        Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
 
         if (bookingLast.isPresent() && bookingNext.isPresent()
                 && bookingNext.get().getBookerId() != userId && bookingLast.get().getBookerId() != userId) {
@@ -92,11 +92,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> findAllByOwnerId(long ownerId) {
-        List<Item> items = itemRepository.findAllByOwnerId(ownerId);
+        List<Item> items = itemStorage.findAllByOwnerId(ownerId);
         List<ItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
-            Optional<Booking> bookingLast = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-            Optional<Booking> bookingNext = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
+            Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+            Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
 
             ItemDto temp;
             if (bookingLast.isPresent() && bookingNext.isPresent()) {
@@ -119,10 +119,10 @@ public class ItemServiceImpl implements ItemService {
             return  new ArrayList<>();
         } else {
             List<ItemDto> itemDtos = new ArrayList<>();
-            List<Item> items =  itemRepository.search(text);
+            List<Item> items =  itemStorage.search(text);
             for (Item item : items) {
-                Optional<Booking> bookingLast = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-                Optional<Booking> bookingNext = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
+                Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+                Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
 
                 ItemDto temp;
                 if (bookingLast.isPresent() && bookingNext.isPresent()) {
@@ -141,14 +141,14 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteById(long itemId) {
-        itemRepository.deleteById(itemId);
+        itemStorage.deleteById(itemId);
     }
 
     private ArrayList<CommentDto> getCommentDtos(long itemId) {
         ArrayList<CommentDto> commentDtos = new ArrayList<>();
-        List<Comment> comments = commentRepository.findAllByItem(itemId);
+        List<Comment> comments = commentStorage.findAllByItem(itemId);
         for (Comment comment : comments) {
-            commentDtos.add(CommentRowMapper.mapToCommentDto(comment, commentRepository.authorName(comment.getAuthor()).get()));
+            commentDtos.add(CommentRowMapper.mapToCommentDto(comment, commentStorage.authorName(comment.getAuthor()).get()));
         }
         return commentDtos;
     }

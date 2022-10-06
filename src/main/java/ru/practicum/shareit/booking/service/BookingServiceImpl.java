@@ -6,20 +6,20 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingLastOrNextDto;
 import ru.practicum.shareit.booking.dto.BookingRowMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.booking.repository.BookingStorage;
 import ru.practicum.shareit.enums.BookingStatus;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
-import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.item.comment.CommentStorage;
 import ru.practicum.shareit.item.comment.CommentRowMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemRowMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.repository.ItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserRowMapper;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.repository.UserStorage;
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
@@ -30,50 +30,50 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class BookingServiceImpl implements BookingService{
-    private final UserRepository userRepository;
+    private final UserStorage userStorage;
 
-    private final ItemRepository itemRepository;
+    private final ItemStorage itemStorage;
 
-    private final BookingRepository bookingRepository;
+    private final BookingStorage bookingStorage;
 
-    private final CommentRepository commentRepository;
+    private final CommentStorage commentStorage;
 
     @Override
     public BookingDto save(BookingDto bookingDto, long bookerId) {
-        if (!userRepository.existsById(bookerId)) {
+        if (!userStorage.existsById(bookerId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
-        if (!itemRepository.findById(bookingDto.getItemId()).orElseThrow(NullPointerException::new).getAvailable()) {
+        if (!itemStorage.findById(bookingDto.getItemId()).orElseThrow(NullPointerException::new).getAvailable()) {
             throw new ValidationException("Вещь для бронирования недоступна.");
         }
-        if (!itemRepository.existsById(bookingDto.getItemId())) {
+        if (!itemStorage.existsById(bookingDto.getItemId())) {
             throw new NullPointerException("Вещь с указанным Id не существует.");
         }
         if (bookingDto.getEnd().isBefore(LocalDateTime.now()) || bookingDto.getEnd().isBefore(bookingDto.getStart()) ||
             bookingDto.getStart().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Ошибка в дате бронирования.");
         }
-        if (itemRepository.findById(bookingDto.getItemId()).get().getOwnerId() == bookerId) {
+        if (itemStorage.findById(bookingDto.getItemId()).get().getOwnerId() == bookerId) {
             throw new NullPointerException("Пользователь вещи не может ее забронировать.");
         }
 
-        Booking booking = bookingRepository.save(BookingRowMapper.toBooking(bookingDto, bookerId));
+        Booking booking = bookingStorage.save(BookingRowMapper.toBooking(bookingDto, bookerId));
 
         return BookingRowMapper.toBookingDto(
                 booking,
                 ItemRowMapper.toItemDto(
-                        Optional.of(itemRepository.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get(),
+                        Optional.of(itemStorage.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get(),
                         new BookingLastOrNextDto(),
                         new BookingLastOrNextDto(), getCommentDtos(booking.getItemId())),
                 UserRowMapper.toUserDto(
-                        Optional.of(userRepository.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get())
+                        Optional.of(userStorage.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get())
         );
     }
 
     @Override
     public BookingDto update(long bookingId, long ownerId, boolean approved) {
-        Optional<Booking> booking = Optional.of(bookingRepository.findById(bookingId).orElseThrow(NullPointerException::new));
-        if (itemRepository.findById(booking.get().getItemId()).get().getOwnerId() != ownerId) {
+        Optional<Booking> booking = Optional.of(bookingStorage.findById(bookingId).orElseThrow(NullPointerException::new));
+        if (itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != ownerId) {
             throw new NullPointerException("Менять статус может только владелец.");
         }
         if (approved) {
@@ -84,12 +84,12 @@ public class BookingServiceImpl implements BookingService{
         } else {
             booking.get().setStatus(BookingStatus.REJECTED);
         }
-        bookingRepository.save(booking.get());
+        bookingStorage.save(booking.get());
 
         return BookingRowMapper.toBookingDto(
                 booking.get(),
                 getItemDto(booking.get()),
-                UserRowMapper.toUserDto(Optional.of(userRepository
+                UserRowMapper.toUserDto(Optional.of(userStorage
                                                         .findById(booking
                                                         .get()
                                                         .getBookerId())
@@ -100,20 +100,20 @@ public class BookingServiceImpl implements BookingService{
 
     @Override
     public BookingDto findById(long bookingId, long userId) {
-        if (!userRepository.existsById(userId)) {
+        if (!userStorage.existsById(userId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
-        Optional<Booking> booking = Optional.of(bookingRepository.findById(bookingId).orElseThrow(NullPointerException::new));
+        Optional<Booking> booking = Optional.of(bookingStorage.findById(bookingId).orElseThrow(NullPointerException::new));
 
         if (booking.get().getBookerId() != userId &&
-            itemRepository.findById(booking.get().getItemId()).get().getOwnerId() != userId) {
+            itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != userId) {
             throw new NullPointerException("");
         }
 
         return  BookingRowMapper.toBookingDto(booking.get(),
                                                 getItemDto(booking.get()),
                                                 UserRowMapper.toUserDto(
-                                                        Optional.of(userRepository
+                                                        Optional.of(userStorage
                                                         .findById(booking.get().getBookerId())
                                                         .orElseThrow(NullPointerException::new)).get()
                                                 ));
@@ -122,7 +122,7 @@ public class BookingServiceImpl implements BookingService{
 
     @Override
     public List<BookingDto> findByState(long userId, String state) {
-        if (!userRepository.existsById(userId)) {
+        if (!userStorage.existsById(userId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
         List<Booking> bookings;
@@ -130,27 +130,27 @@ public class BookingServiceImpl implements BookingService{
         switch (state) {
 
             case "ALL":
-                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
+                bookings = bookingStorage.findAllByBookerIdOrderByStartDesc(userId);
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             case "WAITING":
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
+                bookings = bookingStorage.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             case "REJECTED":
-                bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
+                bookings = bookingStorage.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             case "FUTURE":
-                bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
+                bookings = bookingStorage.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             case "PAST":
-                bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, LocalDateTime.now());
+                bookings = bookingStorage.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, LocalDateTime.now());
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             case "CURRENT":
-                bookings = bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, LocalDateTime.now(), LocalDateTime.now());
+                bookings = bookingStorage.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, LocalDateTime.now(), LocalDateTime.now());
                 return getBookingDtosForBooker(bookings, bookingDtos, userId);
 
             default:
@@ -159,17 +159,17 @@ public class BookingServiceImpl implements BookingService{
     }
     @Override
     public List<BookingDto> findOwnerItems(long ownerId, String state) {
-        if (!userRepository.existsById(ownerId)) {
+        if (!userStorage.existsById(ownerId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
-        List<Item> items = itemRepository.findAllByOwnerId(ownerId);
+        List<Item> items = itemStorage.findAllByOwnerId(ownerId);
         List<Booking> bookings = new ArrayList<>();
         List<BookingDto> bookingDtos = new ArrayList<>();
         switch (state) {
             case "ALL":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemId(item.getId()));
+                        bookings.addAll(bookingStorage.findByItemId(item.getId()));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -178,7 +178,7 @@ public class BookingServiceImpl implements BookingService{
             case "WAITING":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemIdAndStatus(item.getId(), BookingStatus.WAITING));
+                        bookings.addAll(bookingStorage.findByItemIdAndStatus(item.getId(), BookingStatus.WAITING));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -187,7 +187,7 @@ public class BookingServiceImpl implements BookingService{
             case "REJECTED":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemIdAndStatus(item.getId(), BookingStatus.REJECTED));
+                        bookings.addAll(bookingStorage.findByItemIdAndStatus(item.getId(), BookingStatus.REJECTED));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -196,7 +196,7 @@ public class BookingServiceImpl implements BookingService{
             case "FUTURE":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemIdAndStartAfter(item.getId(), LocalDateTime.now()));
+                        bookings.addAll(bookingStorage.findByItemIdAndStartAfter(item.getId(), LocalDateTime.now()));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -205,7 +205,7 @@ public class BookingServiceImpl implements BookingService{
             case "PAST":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemIdAndEndBefore(item.getId(), LocalDateTime.now()));
+                        bookings.addAll(bookingStorage.findByItemIdAndEndBefore(item.getId(), LocalDateTime.now()));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -214,7 +214,7 @@ public class BookingServiceImpl implements BookingService{
             case "CURRENT":
                 for (Item item : items) {
                     if (item.getOwnerId() == ownerId) {
-                        bookings.addAll(bookingRepository.findByItemIdAndStartBeforeAndEndAfter(item.getId(), LocalDateTime.now(), LocalDateTime.now()));
+                        bookings.addAll(bookingStorage.findByItemIdAndStartBeforeAndEndAfter(item.getId(), LocalDateTime.now(), LocalDateTime.now()));
                     }
                 }
                 return getBookingDtosForOwner(bookings, bookingDtos).stream().sorted(Comparator.comparing(BookingDto::getStart).reversed())
@@ -226,18 +226,18 @@ public class BookingServiceImpl implements BookingService{
 
     private  ArrayList<CommentDto> getCommentDtos(long itemId) {
         ArrayList<CommentDto> commentDtos = new ArrayList<>();
-        List<Comment> comments = commentRepository.findAllByItem(itemId);
+        List<Comment> comments = commentStorage.findAllByItem(itemId);
         for (Comment comment : comments) {
-            commentDtos.add(CommentRowMapper.mapToCommentDto(comment, commentRepository.authorName(comment.getAuthor()).get()));
+            commentDtos.add(CommentRowMapper.mapToCommentDto(comment, commentStorage.authorName(comment.getAuthor()).get()));
         }
         return commentDtos;
     }
 
     private ItemDto getItemDto(Booking booking) {
-        Item item = Optional.of(itemRepository.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get();
+        Item item = Optional.of(itemStorage.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get();
 
-        Optional<Booking> bookingLast = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-        Optional<Booking> bookingNext = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
+        Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+        Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
 
         ItemDto itemDto;
         if (bookingLast.isPresent() && bookingNext.isPresent()) {
@@ -260,7 +260,7 @@ public class BookingServiceImpl implements BookingService{
 
     private List<BookingDto> getBookingDtosForBooker(List<Booking> bookings, List<BookingDto> bookingDtos, long userId) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new)).get());
+            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userStorage.findById(userId).orElseThrow(NullPointerException::new)).get());
             bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;
@@ -268,7 +268,7 @@ public class BookingServiceImpl implements BookingService{
 
     private List<BookingDto> getBookingDtosForOwner(List<Booking> bookings, List<BookingDto> bookingDtos ) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userRepository.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
+            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userStorage.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
             bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;
