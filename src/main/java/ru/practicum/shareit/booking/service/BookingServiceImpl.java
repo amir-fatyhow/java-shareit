@@ -57,15 +57,15 @@ public class BookingServiceImpl implements BookingService{
             throw new NullPointerException("Пользователь вещи не может ее забронировать.");
         }
 
-        Booking booking = bookingRepository.save(BookingRowMapper.mapToBooking(bookingDto, bookerId));
+        Booking booking = bookingRepository.save(BookingRowMapper.toBooking(bookingDto, bookerId));
 
-        return BookingRowMapper.mapToBookingDto(
+        return BookingRowMapper.toBookingDto(
                 booking,
-                ItemRowMapper.mapToItemDto(
+                ItemRowMapper.toItemDto(
                         Optional.of(itemRepository.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get(),
                         new BookingLastOrNextDto(),
                         new BookingLastOrNextDto(), getCommentDtos(booking.getItemId())),
-                UserRowMapper.mapToUserDto(
+                UserRowMapper.toUserDto(
                         Optional.of(userRepository.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get())
         );
     }
@@ -86,10 +86,10 @@ public class BookingServiceImpl implements BookingService{
         }
         bookingRepository.save(booking.get());
 
-        return BookingRowMapper.mapToBookingDto(
+        return BookingRowMapper.toBookingDto(
                 booking.get(),
                 getItemDto(booking.get()),
-                UserRowMapper.mapToUserDto(Optional.of(userRepository
+                UserRowMapper.toUserDto(Optional.of(userRepository
                                                         .findById(booking
                                                         .get()
                                                         .getBookerId())
@@ -110,9 +110,9 @@ public class BookingServiceImpl implements BookingService{
             throw new NullPointerException("");
         }
 
-        return  BookingRowMapper.mapToBookingDto(booking.get(),
+        return  BookingRowMapper.toBookingDto(booking.get(),
                                                 getItemDto(booking.get()),
-                                                UserRowMapper.mapToUserDto(
+                                                UserRowMapper.toUserDto(
                                                         Optional.of(userRepository
                                                         .findById(booking.get().getBookerId())
                                                         .orElseThrow(NullPointerException::new)).get()
@@ -241,14 +241,14 @@ public class BookingServiceImpl implements BookingService{
 
         ItemDto itemDto;
         if (bookingLast.isPresent() && bookingNext.isPresent()) {
-            itemDto = ItemRowMapper.mapToItemDto(
+            itemDto = ItemRowMapper.toItemDto(
                     item,
-                    BookingRowMapper.mapToBookingLastAndNext(bookingLast.get()),
-                    BookingRowMapper.mapToBookingLastAndNext(bookingNext.get()),
+                    BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                    BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                     getCommentDtos(booking.getItemId())
             );
         } else {
-            itemDto = ItemRowMapper.mapToItemDto(
+            itemDto = ItemRowMapper.toItemDto(
                     item,
                     new BookingLastOrNextDto(),
                     new BookingLastOrNextDto(),
@@ -260,16 +260,16 @@ public class BookingServiceImpl implements BookingService{
 
     private List<BookingDto> getBookingDtosForBooker(List<Booking> bookings, List<BookingDto> bookingDtos, long userId) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.mapToUserDto(Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new)).get());
-            bookingDtos.add(BookingRowMapper.mapToBookingDto(booking, getItemDto(booking), userDto));
+            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new)).get());
+            bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;
     }
 
     private List<BookingDto> getBookingDtosForOwner(List<Booking> bookings, List<BookingDto> bookingDtos ) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.mapToUserDto(Optional.of(userRepository.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
-            bookingDtos.add(BookingRowMapper.mapToBookingDto(booking, getItemDto(booking), userDto));
+            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userRepository.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
+            bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;
     }

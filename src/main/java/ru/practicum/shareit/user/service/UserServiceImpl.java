@@ -23,8 +23,8 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserDto save(UserDto userDto) {
-        User user = userRepository.save(UserRowMapper.mapToUser(userDto));
-        return UserRowMapper.mapToUserDto(user);
+        User user = userRepository.save(UserRowMapper.toUser(userDto));
+        return UserRowMapper.toUserDto(user);
     }
 
     @Override
@@ -37,18 +37,18 @@ public class UserServiceImpl implements UserService{
         User updateUser = objectMapper.updateValue(targetUser.get(), fields);
 
         userRepository.save(updateUser);
-        return UserRowMapper.mapToUserDto(updateUser);
+        return UserRowMapper.toUserDto(updateUser);
     }
 
     @Override
     public UserDto findById(long userId) {
         Optional<User> user = Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new));
-        return UserRowMapper.mapToUserDto(user.get());
+        return UserRowMapper.toUserDto(user.get());
     }
 
     @Override
     public List<UserDto> findAll() {
-        return UserRowMapper.mapToUserDto(userRepository.findAll());
+        return UserRowMapper.toUserDto(userRepository.findAll());
     }
 
     @Override

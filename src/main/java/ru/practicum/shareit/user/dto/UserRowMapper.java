@@ -7,7 +7,7 @@ import java.util.List;
 
 public class UserRowMapper {
 
-    public static UserDto mapToUserDto(User user) {
+    public static UserDto toUserDto(User user) {
         return new UserDto(
                 user.getId(),
                 user.getName(),
@@ -15,18 +15,18 @@ public class UserRowMapper {
         );
     }
 
-    public static User mapToUser(UserDto userDto) {
+    public static User toUser(UserDto userDto) {
         User user = new User();
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
         return user;
     }
 
-    public static List<UserDto> mapToUserDto(Iterable<User> users) {
+    public static List<UserDto> toUserDto(Iterable<User> users) {
         List<UserDto> result = new ArrayList<>();
 
         for (User user : users) {
-            result.add(mapToUserDto(user));
+            result.add(toUserDto(user));
         }
 
         return result;

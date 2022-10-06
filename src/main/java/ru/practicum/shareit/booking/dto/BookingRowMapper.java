@@ -7,7 +7,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 
 
 public class BookingRowMapper {
-    public static Booking mapToBooking(BookingDto bookingDto, long bookerId) {
+    public static Booking toBooking(BookingDto bookingDto, long bookerId) {
         Booking booking = new Booking();
         booking.setStart(bookingDto.getStart());
         booking.setEnd(bookingDto.getEnd());
@@ -18,7 +18,7 @@ public class BookingRowMapper {
         return booking;
     }
 
-    public static BookingDto mapToBookingDto(Booking booking, ItemDto itemDto, UserDto userDto) {
+    public static BookingDto toBookingDto(Booking booking, ItemDto itemDto, UserDto userDto) {
         return new BookingDto(
                 booking.getId(),
                 booking.getItemId(),
@@ -29,15 +29,8 @@ public class BookingRowMapper {
                 userDto);
     }
 
-    public static BookingLastOrNextDto mapToBookingLastAndNext(Booking booking) {
+    public static BookingLastOrNextDto toBookingLastAndNext(Booking booking) {
         return new BookingLastOrNextDto(booking.getId(), booking.getBookerId());
     }
 
-    /*public static List<BookingDto> mapToBookingDto(Iterable<Booking> bookings, ItemServiceImpl itemService, UserServiceImpl userService) {
-        List<BookingDto> dtos = new ArrayList<>();
-        for (Booking booking : bookings) {
-            dtos.add(mapToBookingDto(booking, itemService, userService));
-        }
-        return dtos;
-    }*/
 }

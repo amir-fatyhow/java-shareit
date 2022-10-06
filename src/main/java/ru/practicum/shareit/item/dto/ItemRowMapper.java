@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class ItemRowMapper  {
 
-    public static ItemDto mapToItemDto(Item item, BookingLastOrNextDto last, BookingLastOrNextDto next, ArrayList<CommentDto> comments) {
+    public static ItemDto toItemDto(Item item, BookingLastOrNextDto last, BookingLastOrNextDto next, ArrayList<CommentDto> comments) {
         return new ItemDto(
                 item.getId(),
                 item.getName(),
@@ -22,7 +22,7 @@ public class ItemRowMapper  {
         );
     }
 
-    public static Item mapToItem(ItemDto itemDto, long ownerId) {
+    public static Item toItem(ItemDto itemDto, long ownerId) {
         Item item = new Item();
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());

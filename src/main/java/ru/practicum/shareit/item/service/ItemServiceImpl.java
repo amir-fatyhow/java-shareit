@@ -40,9 +40,9 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(ownerId)) {
             throw new NullPointerException("Пользователя с указанным Id не существует.");
         }
-        Item item = itemRepository.save(ItemRowMapper.mapToItem(itemDto, ownerId));
+        Item item = itemRepository.save(ItemRowMapper.toItem(itemDto, ownerId));
 
-        return ItemRowMapper.mapToItemDto(item, new BookingLastOrNextDto(), new BookingLastOrNextDto(), new ArrayList<>());
+        return ItemRowMapper.toItemDto(item, new BookingLastOrNextDto(), new BookingLastOrNextDto(), new ArrayList<>());
     }
 
     @Override
@@ -65,12 +65,12 @@ public class ItemServiceImpl implements ItemService {
 
 
         if (bookingLast.isPresent() && bookingNext.isPresent()) {
-            return ItemRowMapper.mapToItemDto(updateItem,
-                    BookingRowMapper.mapToBookingLastAndNext(bookingLast.get()),
-                    BookingRowMapper.mapToBookingLastAndNext(bookingNext.get()),
+            return ItemRowMapper.toItemDto(updateItem,
+                    BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                    BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                     getCommentDtos(itemId));
         }
-        return ItemRowMapper.mapToItemDto(updateItem, null, null, getCommentDtos(itemId));
+        return ItemRowMapper.toItemDto(updateItem, null, null, getCommentDtos(itemId));
     }
 
     @Override
@@ -82,12 +82,12 @@ public class ItemServiceImpl implements ItemService {
 
         if (bookingLast.isPresent() && bookingNext.isPresent()
                 && bookingNext.get().getBookerId() != userId && bookingLast.get().getBookerId() != userId) {
-            return ItemRowMapper.mapToItemDto(targetItem.get(),
-                    BookingRowMapper.mapToBookingLastAndNext(bookingLast.get()),
-                    BookingRowMapper.mapToBookingLastAndNext(bookingNext.get()),
+            return ItemRowMapper.toItemDto(targetItem.get(),
+                    BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                    BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                     getCommentDtos(itemId));
         }
-        return ItemRowMapper.mapToItemDto(targetItem.get(), null, null, getCommentDtos(itemId));
+        return ItemRowMapper.toItemDto(targetItem.get(), null, null, getCommentDtos(itemId));
     }
 
     @Override
@@ -100,12 +100,12 @@ public class ItemServiceImpl implements ItemService {
 
             ItemDto temp;
             if (bookingLast.isPresent() && bookingNext.isPresent()) {
-                temp = ItemRowMapper.mapToItemDto(item,
-                        BookingRowMapper.mapToBookingLastAndNext(bookingLast.get()),
-                        BookingRowMapper.mapToBookingLastAndNext(bookingNext.get()),
+                temp = ItemRowMapper.toItemDto(item,
+                        BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                        BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                         getCommentDtos(item.getId()));
             } else {
-                temp = ItemRowMapper.mapToItemDto(item, null, null, getCommentDtos(item.getId()));
+                temp = ItemRowMapper.toItemDto(item, null, null, getCommentDtos(item.getId()));
             }
             itemDtos.add(temp);
         }
@@ -126,12 +126,12 @@ public class ItemServiceImpl implements ItemService {
 
                 ItemDto temp;
                 if (bookingLast.isPresent() && bookingNext.isPresent()) {
-                    temp = ItemRowMapper.mapToItemDto(item,
-                            BookingRowMapper.mapToBookingLastAndNext(bookingLast.get()),
-                            BookingRowMapper.mapToBookingLastAndNext(bookingNext.get()),
+                    temp = ItemRowMapper.toItemDto(item,
+                            BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                            BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                             getCommentDtos(item.getId()));
                 } else {
-                    temp = ItemRowMapper.mapToItemDto(item, null, null, getCommentDtos(item.getId()));
+                    temp = ItemRowMapper.toItemDto(item, null, null, getCommentDtos(item.getId()));
                 }
                 itemDtos.add(temp);
             }
