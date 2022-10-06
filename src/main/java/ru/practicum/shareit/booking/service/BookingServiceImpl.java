@@ -20,6 +20,7 @@ import ru.practicum.shareit.item.repositories.ItemStorage;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserRowMapper;
 import ru.practicum.shareit.user.repositories.UserStorage;
+
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 @AllArgsConstructor
-public class BookingServiceImpl implements BookingService{
+public class BookingServiceImpl implements BookingService {
     private final UserStorage userStorage;
 
     private final ItemStorage itemStorage;
@@ -50,7 +51,7 @@ public class BookingServiceImpl implements BookingService{
             throw new NullPointerException("Вещь с указанным Id не существует.");
         }
         if (bookingDto.getEnd().isBefore(LocalDateTime.now()) || bookingDto.getEnd().isBefore(bookingDto.getStart()) ||
-            bookingDto.getStart().isBefore(LocalDateTime.now())) {
+                bookingDto.getStart().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Ошибка в дате бронирования.");
         }
         if (itemStorage.findById(bookingDto.getItemId()).get().getOwnerId() == bookerId) {
@@ -90,11 +91,11 @@ public class BookingServiceImpl implements BookingService{
                 booking.get(),
                 getItemDto(booking.get()),
                 UserRowMapper.toUserDto(Optional.of(userStorage
-                                                        .findById(booking
-                                                        .get()
-                                                        .getBookerId())
-                                                        .orElseThrow(NullPointerException::new))
-                                                        .get())
+                                .findById(booking
+                                        .get()
+                                        .getBookerId())
+                                .orElseThrow(NullPointerException::new))
+                        .get())
         );
     }
 
@@ -106,17 +107,17 @@ public class BookingServiceImpl implements BookingService{
         Optional<Booking> booking = Optional.of(bookingStorage.findById(bookingId).orElseThrow(NullPointerException::new));
 
         if (booking.get().getBookerId() != userId &&
-            itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != userId) {
+                itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != userId) {
             throw new NullPointerException("");
         }
 
-        return  BookingRowMapper.toBookingDto(booking.get(),
-                                                getItemDto(booking.get()),
-                                                UserRowMapper.toUserDto(
-                                                        Optional.of(userStorage
-                                                        .findById(booking.get().getBookerId())
-                                                        .orElseThrow(NullPointerException::new)).get()
-                                                ));
+        return BookingRowMapper.toBookingDto(booking.get(),
+                getItemDto(booking.get()),
+                UserRowMapper.toUserDto(
+                        Optional.of(userStorage
+                                .findById(booking.get().getBookerId())
+                                .orElseThrow(NullPointerException::new)).get()
+                ));
 
     }
 
@@ -157,6 +158,7 @@ public class BookingServiceImpl implements BookingService{
                 throw new UnsupportedStatus("");
         }
     }
+
     @Override
     public List<BookingDto> findOwnerItems(long ownerId, String state) {
         if (!userStorage.existsById(ownerId)) {
@@ -224,7 +226,7 @@ public class BookingServiceImpl implements BookingService{
         }
     }
 
-    private  ArrayList<CommentDto> getCommentDtos(long itemId) {
+    private ArrayList<CommentDto> getCommentDtos(long itemId) {
         ArrayList<CommentDto> commentDtos = new ArrayList<>();
         List<Comment> comments = commentStorage.findAllByItem(itemId);
         for (Comment comment : comments) {
@@ -266,7 +268,7 @@ public class BookingServiceImpl implements BookingService{
         return bookingDtos;
     }
 
-    private List<BookingDto> getBookingDtosForOwner(List<Booking> bookings, List<BookingDto> bookingDtos ) {
+    private List<BookingDto> getBookingDtosForOwner(List<Booking> bookings, List<BookingDto> bookingDtos) {
         for (Booking booking : bookings) {
             UserDto userDto = UserRowMapper.toUserDto(Optional.of(userStorage.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
             bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
