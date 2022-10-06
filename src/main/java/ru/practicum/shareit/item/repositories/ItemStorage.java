@@ -9,11 +9,9 @@ import java.util.List;
 public interface ItemStorage extends JpaRepository<Item, Long> {
     List<Item> findAllByOwnerId(long ownerId);
 
-    @Query(value = "SELECT * " +
-            "FROM ITEMS AS I " +
-            "WHERE (I.NAME ~* ?1 " +
-            "OR I.DESCRIPTION ~* ?1)" +
-            "AND I.IS_AVAILABLE = true",
-            nativeQuery = true)
-    List<Item> search(String text);
+    @Query(value = "select * from ITEMS I " +
+            "where (lower(I.NAME) LIKE lower(concat('%', :name, '%')) " +
+            "OR lower(I.DESCRIPTION) LIKE lower(concat('%', :description, '%'))" +
+            "AND I.IS_AVAILABLE = TRUE)", nativeQuery = true)
+    List<Item> search(String name, String description);
 }

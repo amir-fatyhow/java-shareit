@@ -119,7 +119,7 @@ public class ItemServiceImpl implements ItemService {
             return  new ArrayList<>();
         } else {
             List<ItemDto> itemDtos = new ArrayList<>();
-            List<Item> items =  itemStorage.search(text);
+            List<Item> items =  itemStorage.search(text, text);
             for (Item item : items) {
                 Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
                 Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
