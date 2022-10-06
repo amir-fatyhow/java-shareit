@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user.service;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
