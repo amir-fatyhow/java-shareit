@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserRowMapper;
-import ru.practicum.shareit.user.repository.UserStorage;
+import ru.practicum.shareit.user.repositories.UserStorage;
 
 import java.util.List;
 import java.util.Map;

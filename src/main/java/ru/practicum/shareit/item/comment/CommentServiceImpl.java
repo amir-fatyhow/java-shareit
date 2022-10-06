@@ -2,7 +2,7 @@ package ru.practicum.shareit.item.comment;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.repository.BookingStorage;
+import ru.practicum.shareit.booking.repositories.BookingStorage;
 import ru.practicum.shareit.enums.BookingStatus;
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
