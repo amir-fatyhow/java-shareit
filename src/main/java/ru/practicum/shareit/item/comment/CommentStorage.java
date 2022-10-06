@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CommentStorage extends JpaRepository<Comment,Long> {
     @Query(value = "SELECT U.NAME " +
-            "FROM USERS AS U "+
+            "FROM USERS AS U " +
             "WHERE U.ID = ?1 ",
             nativeQuery = true)
     Optional<String> authorName(long userId);
