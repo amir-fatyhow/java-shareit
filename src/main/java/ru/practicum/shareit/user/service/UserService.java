@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserService {
-    List<UserDto> getAllUsers();
-    UserDto createUser(User user);
+    UserDto save(UserDto userDto);
 
-    UserDto getUserById(long userId);
+    UserDto update(Map<Object,Object> fields, long userId) throws JsonMappingException;
 
-    UserDto updateUser(Map<Object,Object> fields, long userId) throws JsonMappingException;
+    UserDto findById(long userId);
 
-    void deleteUser(long userId);
+    List<UserDto> findAll();
+
+    void deleteById(long userId);
+
 }

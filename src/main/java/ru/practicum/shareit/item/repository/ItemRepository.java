@@ -1,22 +1,19 @@
 package ru.practicum.shareit.item.repository;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
-import java.util.Map;
 
-public interface ItemRepository {
-    ItemDto createItem(Item item, long userId);
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    List<Item> findAllByOwnerId(long ownerId);
 
-    ItemDto updateItem(Map<Object,Object> fields, long itemId, long userId)throws JsonMappingException;
-
-    List<ItemDto> getAllItemsByUserId(long userId);
-
-    ItemDto getItemById(long itemId);
-
-    List<ItemDto> searchItems(String text);
-
-    void deleteItemById(long itemId);
+    @Query(value = "SELECT * " +
+            "FROM ITEMS AS I "+
+            "WHERE (I.NAME ~* ?1 "+
+            "OR I.DESCRIPTION ~* ?1)" +
+            "AND I.IS_AVAILABLE = true",
+            nativeQuery = true)
+    List<Item> search(String text);
 }

@@ -1,14 +1,17 @@
 package ru.practicum.shareit.user.service;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserRowMapper;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -16,28 +19,40 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
 
+    private final ObjectMapper objectMapper;
+
     @Override
-    public List<UserDto> getAllUsers() {
-        return userRepository.getAllUsers();
+    public UserDto save(UserDto userDto) {
+        User user = userRepository.save(UserRowMapper.mapToUser(userDto));
+        return UserRowMapper.mapToUserDto(user);
     }
 
     @Override
-    public UserDto createUser(User user) {
-        return userRepository.createUser(user);
+    public UserDto update(Map<Object,Object> fields, long userId) throws JsonMappingException {
+        if (!userRepository.existsById(userId)) {
+            throw new NullPointerException("Пользователь с указанным id не существует.");
+        }
+
+        Optional<User> targetUser = Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new));
+        User updateUser = objectMapper.updateValue(targetUser.get(), fields);
+
+        userRepository.save(updateUser);
+        return UserRowMapper.mapToUserDto(updateUser);
     }
 
     @Override
-    public UserDto getUserById(long userId) {
-        return userRepository.getUserById(userId);
+    public UserDto findById(long userId) {
+        Optional<User> user = Optional.of(userRepository.findById(userId).orElseThrow(NullPointerException::new));
+        return UserRowMapper.mapToUserDto(user.get());
     }
 
     @Override
-    public UserDto updateUser(Map<Object,Object> fields, long userId) throws JsonMappingException {
-        return userRepository.updateUser(fields,userId);
+    public List<UserDto> findAll() {
+        return UserRowMapper.mapToUserDto(userRepository.findAll());
     }
 
     @Override
-    public void deleteUser(long userId) {
-        userRepository.deleteUser(userId);
+    public void deleteById(long userId) {
+        userRepository.deleteById(userId);
     }
 }

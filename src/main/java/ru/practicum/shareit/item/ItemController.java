@@ -3,8 +3,9 @@ package ru.practicum.shareit.item;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.comment.CommentDto;
+import ru.practicum.shareit.item.comment.CommentService;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -17,35 +18,42 @@ import java.util.Map;
 public class ItemController {
     private final ItemService itemService;
 
+    private final CommentService commentService;
+
     @PostMapping
-    public ItemDto createItem(@RequestBody @Valid Item item, @RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.createItem(item, userId);
+    public ItemDto save(@RequestBody @Valid ItemDto ItemDto, @RequestHeader("X-Sharer-User-Id") long ownerId) {
+        return itemService.save(ItemDto, ownerId);
     }
 
     @GetMapping("/{id}")
-    public ItemDto getItemById(@PathVariable long id) {
-        return itemService.getItemById(id);
+    public ItemDto findById(@PathVariable long id, @RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.findById(id, userId);
     }
 
     @GetMapping()
-    public List<ItemDto> getAllItemsByUserId(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.getAllItemsByUserId(userId);
+    public List<ItemDto> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.findAllByOwnerId(userId);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam String text) {
-        return itemService.searchItems(text);
+    public List<ItemDto> search(@RequestParam String text) {
+        return itemService.search(text);
     }
 
     @PatchMapping("/{id}")
-    public ItemDto updateItem(@PathVariable long id, @RequestBody Map<Object,Object> fields,
-                              @RequestHeader("X-Sharer-User-Id") long userId) throws JsonMappingException {
-        return itemService.updateItem(fields, id, userId);
+    public ItemDto update(@PathVariable long id, @RequestBody Map<Object,Object> fields,
+                              @RequestHeader("X-Sharer-User-Id") long ownerId) throws JsonMappingException {
+        return itemService.update(fields, id, ownerId);
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItemById(@PathVariable long itemId) {
-        itemService.deleteItemById(itemId);
+    public void deleteById(@PathVariable long itemId) {
+        itemService.deleteById(itemId);
     }
 
+    @PostMapping("/{itemId}/comment")
+    public CommentDto postComment(@RequestBody CommentDto commentDto,
+                                  @PathVariable long itemId, @RequestHeader("X-Sharer-User-Id") long authorId) {
+        return commentService.save(commentDto, authorId, itemId);
+    }
 }

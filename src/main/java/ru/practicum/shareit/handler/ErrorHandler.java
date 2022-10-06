@@ -1,15 +1,41 @@
 package ru.practicum.shareit.handler;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.exception.NotFound;
+import ru.practicum.shareit.booking.BookingController;
+import ru.practicum.shareit.exception.UnsupportedStatus;
+import ru.practicum.shareit.item.ItemController;
+import ru.practicum.shareit.user.UserController;
+import javax.validation.ValidationException;
+import java.util.Map;
 
-@RestControllerAdvice
+@RestControllerAdvice(assignableTypes = {BookingController.class, UserController.class, ItemController.class})
 public class ErrorHandler {
-    @ExceptionHandler({NotFound.class})
-    public ResponseEntity<String> runtimeHandler(final RuntimeException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+    public static final String ERROR = "error";
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Map<String, String> handleNullPointerException(final NullPointerException e) {
+        return Map.of(ERROR, "NullPointerException");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleValidationException(final ValidationException e) {
+        return Map.of(ERROR, "ValidationException");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+        return Map.of(ERROR, "DataIntegrityViolationException");
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleUnsupportedStatus(final UnsupportedStatus e) {
+        return Map.of(ERROR, "Unknown state: UNSUPPORTED_STATUS");
     }
 }
