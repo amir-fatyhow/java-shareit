@@ -19,8 +19,8 @@ public class ItemController {
     private final CommentService commentService;
 
     @PostMapping
-    public ItemDto save(@RequestBody ItemDto ItemDto, @RequestHeader("X-Sharer-User-Id") long ownerId) {
-        return itemService.save(ItemDto, ownerId);
+    public ItemDto save(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") long ownerId) {
+        return itemService.save(itemDto, ownerId);
     }
 
     @GetMapping("/{id}")
