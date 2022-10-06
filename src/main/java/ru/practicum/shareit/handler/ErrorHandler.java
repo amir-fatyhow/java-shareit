@@ -15,6 +15,7 @@ import java.util.Map;
 @RestControllerAdvice(assignableTypes = {BookingController.class, UserController.class, ItemController.class})
 public class ErrorHandler {
     public static final String ERROR = "error";
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNullPointerException(final NullPointerException e) {
