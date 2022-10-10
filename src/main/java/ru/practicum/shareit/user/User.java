@@ -1,17 +1,14 @@
 package ru.practicum.shareit.user;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.Getter;
+import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "USERS")
 public class User {
@@ -25,7 +22,7 @@ public class User {
     @NotNull
     private String name;
 
-    @Column(name = "EMAIL")
+    @Column(name = "EMAIL", length=512, unique = true)
     @NotBlank
     @NotNull
     @Pattern(regexp = "^(.+)@(\\S+)$")

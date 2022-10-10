@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingRowMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repositories.BookingStorage;
 import ru.practicum.shareit.enums.BookingStatus;
+import ru.practicum.shareit.exception.ShareItNotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
@@ -32,30 +33,27 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final UserStorage userStorage;
-
     private final ItemStorage itemStorage;
-
     private final BookingStorage bookingStorage;
-
     private final CommentStorage commentStorage;
 
     @Override
     public BookingDto save(BookingDto bookingDto, long bookerId) {
         if (!userStorage.existsById(bookerId)) {
-            throw new NullPointerException("Пользователя с указанным Id не существует.");
+            throw new ShareItNotFoundException("Пользователя с указанным Id не существует.");
         }
-        if (!itemStorage.findById(bookingDto.getItemId()).orElseThrow(NullPointerException::new).getAvailable()) {
+        if (!itemStorage.findById(bookingDto.getItemId()).orElseThrow(() -> new ShareItNotFoundException("")).getAvailable()) {
             throw new ValidationException("Вещь для бронирования недоступна.");
         }
         if (!itemStorage.existsById(bookingDto.getItemId())) {
-            throw new NullPointerException("Вещь с указанным Id не существует.");
+            throw new ShareItNotFoundException("Вещь с указанным Id не существует.");
         }
         if (bookingDto.getEnd().isBefore(LocalDateTime.now()) || bookingDto.getEnd().isBefore(bookingDto.getStart()) ||
                 bookingDto.getStart().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Ошибка в дате бронирования.");
         }
         if (itemStorage.findById(bookingDto.getItemId()).get().getOwnerId() == bookerId) {
-            throw new NullPointerException("Пользователь вещи не может ее забронировать.");
+            throw new ShareItNotFoundException("Пользователь вещи не может ее забронировать.");
         }
 
         Booking booking = bookingStorage.save(BookingRowMapper.toBooking(bookingDto, bookerId));
@@ -63,38 +61,36 @@ public class BookingServiceImpl implements BookingService {
         return BookingRowMapper.toBookingDto(
                 booking,
                 ItemRowMapper.toItemDto(
-                        Optional.of(itemStorage.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get(),
+                        itemStorage.findById(booking.getItemId()).orElseThrow(() -> new ShareItNotFoundException("")),
                         new BookingLastOrNextDto(),
                         new BookingLastOrNextDto(), getCommentDtos(booking.getItemId())),
                 UserRowMapper.toUserDto(
-                        Optional.of(userStorage.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get())
+                        userStorage.findById(booking.getBookerId()).orElseThrow(() -> new ShareItNotFoundException("")))
         );
     }
 
     @Override
     public BookingDto update(long bookingId, long ownerId, boolean approved) {
-        Optional<Booking> booking = Optional.of(bookingStorage.findById(bookingId).orElseThrow(NullPointerException::new));
-        if (itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != ownerId) {
-            throw new NullPointerException("Менять статус может только владелец.");
+        Booking booking = bookingStorage.findById(bookingId).orElseThrow(() -> new ShareItNotFoundException(""));
+        if (itemStorage.findById(booking.getItemId()).get().getOwnerId() != ownerId) {
+            throw new ShareItNotFoundException("Менять статус может только владелец.");
         }
         if (approved) {
-            if (booking.get().getStatus().equals(BookingStatus.APPROVED)) {
+            if (booking.getStatus() == BookingStatus.APPROVED) {
                 throw new ValidationException("Второе подтверждение статуса.");
             }
-            booking.get().setStatus(BookingStatus.APPROVED);
+            booking.setStatus(BookingStatus.APPROVED);
         } else {
-            booking.get().setStatus(BookingStatus.REJECTED);
+            booking.setStatus(BookingStatus.REJECTED);
         }
-        bookingStorage.save(booking.get());
+        bookingStorage.save(booking);
 
         return BookingRowMapper.toBookingDto(
-                booking.get(),
-                getItemDto(booking.get()),
+                booking,
+                getItemDto(booking),
                 UserRowMapper.toUserDto(Optional.of(userStorage
-                                .findById(booking
-                                        .get()
-                                        .getBookerId())
-                                .orElseThrow(NullPointerException::new))
+                                .findById(booking.getBookerId())
+                                .orElseThrow(() -> new ShareItNotFoundException("")))
                         .get())
         );
     }
@@ -102,21 +98,21 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto findById(long bookingId, long userId) {
         if (!userStorage.existsById(userId)) {
-            throw new NullPointerException("Пользователя с указанным Id не существует.");
+            throw new ShareItNotFoundException("Пользователя с указанным Id не существует.");
         }
-        Optional<Booking> booking = Optional.of(bookingStorage.findById(bookingId).orElseThrow(NullPointerException::new));
+        Booking booking = bookingStorage.findById(bookingId).orElseThrow(() -> new ShareItNotFoundException(""));
 
-        if (booking.get().getBookerId() != userId &&
-                itemStorage.findById(booking.get().getItemId()).get().getOwnerId() != userId) {
-            throw new NullPointerException("");
+        if (booking.getBookerId() != userId &&
+                itemStorage.findById(booking.getItemId()).get().getOwnerId() != userId) {
+            throw new ShareItNotFoundException("");
         }
 
-        return BookingRowMapper.toBookingDto(booking.get(),
-                getItemDto(booking.get()),
+        return BookingRowMapper.toBookingDto(booking,
+                getItemDto(booking),
                 UserRowMapper.toUserDto(
                         Optional.of(userStorage
-                                .findById(booking.get().getBookerId())
-                                .orElseThrow(NullPointerException::new)).get()
+                                .findById(booking.getBookerId())
+                                .orElseThrow(() -> new ShareItNotFoundException(""))).get()
                 ));
 
     }
@@ -124,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> findByState(long userId, String state) {
         if (!userStorage.existsById(userId)) {
-            throw new NullPointerException("Пользователя с указанным Id не существует.");
+            throw new ShareItNotFoundException("Пользователя с указанным Id не существует.");
         }
         List<Booking> bookings;
         List<BookingDto> bookingDtos = new ArrayList<>();
@@ -162,7 +158,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> findOwnerItems(long ownerId, String state) {
         if (!userStorage.existsById(ownerId)) {
-            throw new NullPointerException("Пользователя с указанным Id не существует.");
+            throw new ShareItNotFoundException("Пользователя с указанным Id не существует.");
         }
         List<Item> items = itemStorage.findAllByOwnerId(ownerId);
         List<Booking> bookings = new ArrayList<>();
@@ -236,7 +232,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private ItemDto getItemDto(Booking booking) {
-        Item item = Optional.of(itemStorage.findById(booking.getItemId()).orElseThrow(NullPointerException::new)).get();
+        Item item = itemStorage.findById(booking.getItemId()).orElseThrow(() -> new ShareItNotFoundException(""));
 
         Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
         Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
@@ -262,7 +258,7 @@ public class BookingServiceImpl implements BookingService {
 
     private List<BookingDto> getBookingDtosForBooker(List<Booking> bookings, List<BookingDto> bookingDtos, long userId) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userStorage.findById(userId).orElseThrow(NullPointerException::new)).get());
+            UserDto userDto = UserRowMapper.toUserDto(userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException("")));
             bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;
@@ -270,7 +266,7 @@ public class BookingServiceImpl implements BookingService {
 
     private List<BookingDto> getBookingDtosForOwner(List<Booking> bookings, List<BookingDto> bookingDtos) {
         for (Booking booking : bookings) {
-            UserDto userDto = UserRowMapper.toUserDto(Optional.of(userStorage.findById(booking.getBookerId()).orElseThrow(NullPointerException::new)).get());
+            UserDto userDto = UserRowMapper.toUserDto(userStorage.findById(booking.getBookerId()).orElseThrow(() -> new ShareItNotFoundException("")));
             bookingDtos.add(BookingRowMapper.toBookingDto(booking, getItemDto(booking), userDto));
         }
         return bookingDtos;

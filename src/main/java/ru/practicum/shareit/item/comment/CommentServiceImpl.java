@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.repositories.BookingStorage;
 import ru.practicum.shareit.enums.BookingStatus;
+import ru.practicum.shareit.exception.ShareItNotFoundException;
+
 import javax.validation.ValidationException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentStorage commentStorage;
-
     private final BookingStorage bookingStorage;
 
     @Override
@@ -22,12 +22,12 @@ public class CommentServiceImpl implements CommentService {
             throw new ValidationException("Комментарий может оставлять только пользователь, который бронировал данную вещь.");
         }
 
-        Optional<String> authorName = Optional.ofNullable(commentStorage.authorName(author).orElseThrow(NullPointerException::new));
+        String authorName = commentStorage.authorName(author).orElseThrow(() -> new ShareItNotFoundException(""));
         commentDto.setCreated(LocalDateTime.now());
         commentDto.setItemId(item);
 
         Comment comment = commentStorage.save(CommentRowMapper.mapToComment(commentDto, author));
 
-        return CommentRowMapper.mapToCommentDto(comment, authorName.get());
+        return CommentRowMapper.mapToCommentDto(comment, authorName);
     }
 }

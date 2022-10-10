@@ -15,7 +15,6 @@ import java.util.Map;
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
-
     private final CommentService commentService;
 
     @PostMapping
@@ -28,7 +27,7 @@ public class ItemController {
         return itemService.findById(id, userId);
     }
 
-    @GetMapping()
+    @GetMapping
     public List<ItemDto> findAllByOwnerId(@RequestHeader("X-Sharer-User-Id") long userId) {
         return itemService.findAllByOwnerId(userId);
     }

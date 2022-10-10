@@ -9,7 +9,7 @@ import java.util.Map;
 public interface UserService {
     UserDto save(UserDto userDto);
 
-    UserDto update(Map<Object,Object> fields, long userId) throws JsonMappingException;
+    UserDto update(Map<Object, Object> fields, long userId) throws JsonMappingException;
 
     UserDto findById(long userId);
 

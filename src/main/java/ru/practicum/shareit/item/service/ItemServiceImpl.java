@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingLastOrNextDto;
 import ru.practicum.shareit.booking.dto.BookingRowMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repositories.BookingStorage;
+import ru.practicum.shareit.exception.ShareItNotFoundException;
 import ru.practicum.shareit.item.comment.Comment;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.comment.CommentStorage;
@@ -26,19 +27,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemStorage itemStorage;
-
     private final UserStorage userStorage;
-
     private final BookingStorage bookingStorage;
-
     private final CommentStorage commentStorage;
-
     private final ObjectMapper objectMapper;
 
     @Override
     public ItemDto save(ItemDto itemDto, long ownerId) {
         if (!userStorage.existsById(ownerId)) {
-            throw new NullPointerException("Пользователя с указанным Id не существует.");
+            throw new ShareItNotFoundException("Пользователя с указанным Id не существует.");
         }
         Item item = itemStorage.save(ItemRowMapper.toItem(itemDto, ownerId));
 
@@ -48,16 +45,16 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto update(Map<Object, Object> fields, long itemId, long userId) throws JsonMappingException {
         if (!itemStorage.existsById(itemId)) {
-            throw new NullPointerException("Вещи с указанным Id не существует.");
+            throw new ShareItNotFoundException("Вещи с указанным Id не существует.");
         }
 
-        Optional<Item> targetItem = Optional.of(itemStorage.findById(itemId).orElseThrow(NullPointerException::new));
+        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException(""));
 
-        if (targetItem.get().getOwnerId() != userId) {
-            throw new NullPointerException("Обновлять вещь может только ее владелец.");
+        if (targetItem.getOwnerId() != userId) {
+            throw new ShareItNotFoundException("Обновлять вещь может только ее владелец.");
         }
 
-        Item updateItem = objectMapper.updateValue(targetItem.get(), fields);
+        Item updateItem = objectMapper.updateValue(targetItem, fields);
         itemStorage.save(updateItem);
 
         Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
@@ -75,19 +72,19 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto findById(long itemId, long userId) {
-        Optional<Item> targetItem = Optional.of(itemStorage.findById(itemId).orElseThrow(NullPointerException::new));
+        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException(""));
 
         Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
         Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
 
         if (bookingLast.isPresent() && bookingNext.isPresent()
                 && bookingNext.get().getBookerId() != userId && bookingLast.get().getBookerId() != userId) {
-            return ItemRowMapper.toItemDto(targetItem.get(),
+            return ItemRowMapper.toItemDto(targetItem,
                     BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
                     BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
                     getCommentDtos(itemId));
         }
-        return ItemRowMapper.toItemDto(targetItem.get(), null, null, getCommentDtos(itemId));
+        return ItemRowMapper.toItemDto(targetItem, null, null, getCommentDtos(itemId));
     }
 
     @Override
@@ -117,26 +114,25 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> search(String text) {
         if (text.isBlank()) {
             return  new ArrayList<>();
-        } else {
-            List<ItemDto> itemDtos = new ArrayList<>();
-            List<Item> items =  itemStorage.search(text, text);
-            for (Item item : items) {
-                Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
-                Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
-
-                ItemDto temp;
-                if (bookingLast.isPresent() && bookingNext.isPresent()) {
-                    temp = ItemRowMapper.toItemDto(item,
-                            BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
-                            BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
-                            getCommentDtos(item.getId()));
-                } else {
-                    temp = ItemRowMapper.toItemDto(item, null, null, getCommentDtos(item.getId()));
-                }
-                itemDtos.add(temp);
-            }
-            return itemDtos;
         }
+        List<ItemDto> itemDtos = new ArrayList<>();
+        List<Item> items =  itemStorage.search(text, text);
+        for (Item item : items) {
+            Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now());
+            Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now());
+
+            ItemDto temp;
+            if (bookingLast.isPresent() && bookingNext.isPresent()) {
+                temp = ItemRowMapper.toItemDto(item,
+                        BookingRowMapper.toBookingLastAndNext(bookingLast.get()),
+                        BookingRowMapper.toBookingLastAndNext(bookingNext.get()),
+                        getCommentDtos(item.getId()));
+            } else {
+                temp = ItemRowMapper.toItemDto(item, null, null, getCommentDtos(item.getId()));
+            }
+            itemDtos.add(temp);
+        }
+        return itemDtos;
     }
 
     @Override

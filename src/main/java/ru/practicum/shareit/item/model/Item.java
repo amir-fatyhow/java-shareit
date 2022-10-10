@@ -1,18 +1,15 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.Getter;
+import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "ITEMS")
-@Data
+@Getter
+@Setter
 public class Item {
     @Id
     @Column(name = "ID")
@@ -24,7 +21,7 @@ public class Item {
     @NotNull
     private String name;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "DESCRIPTION", length = 1024)
     @NotBlank
     @NotNull
     private String description;

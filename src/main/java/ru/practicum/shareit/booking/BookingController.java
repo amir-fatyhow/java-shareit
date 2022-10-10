@@ -26,7 +26,7 @@ public class BookingController {
         return bookingService.findOwnerItems(ownerId, state);
     }
 
-    @GetMapping()
+    @GetMapping
     public List<BookingDto> findByState(@RequestHeader("X-Sharer-User-Id") long userId,
                                         @RequestParam(defaultValue = "ALL") String state) {
         return bookingService.findByState(userId, state);

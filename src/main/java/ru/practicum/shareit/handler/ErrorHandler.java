@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.booking.BookingController;
+import ru.practicum.shareit.exception.ShareItNotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.user.UserController;
@@ -18,8 +19,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleNullPointerException(final NullPointerException e) {
-        return Map.of(ERROR, "NullPointerException");
+    public Map<String, String> handleShareItNotFoundException(final ShareItNotFoundException e) {
+        return Map.of(ERROR, "ShareItNotFoundException");
     }
 
     @ExceptionHandler

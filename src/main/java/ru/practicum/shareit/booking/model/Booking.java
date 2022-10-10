@@ -1,17 +1,15 @@
 package ru.practicum.shareit.booking.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.shareit.enums.BookingStatus;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "BOOKINGS")
-@Data
+@Getter
+@Setter
 public class Booking {
     @Id
     @Column(name = "ID")

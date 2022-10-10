@@ -17,7 +17,6 @@ public class BookingRowMapper {
 
         return booking;
     }
-
     public static BookingDto toBookingDto(Booking booking, ItemDto itemDto, UserDto userDto) {
         return new BookingDto(
                 booking.getId(),
@@ -28,7 +27,6 @@ public class BookingRowMapper {
                 itemDto,
                 userDto);
     }
-
     public static BookingLastOrNextDto toBookingLastAndNext(Booking booking) {
         return new BookingLastOrNextDto(booking.getId(), booking.getBookerId());
     }
