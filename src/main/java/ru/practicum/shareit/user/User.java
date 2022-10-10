@@ -22,7 +22,7 @@ public class User {
     @NotNull
     private String name;
 
-    @Column(name = "EMAIL", length=512, unique = true)
+    @Column(name = "EMAIL", length = 512, unique = true)
     @NotBlank
     @NotNull
     @Pattern(regexp = "^(.+)@(\\S+)$")
