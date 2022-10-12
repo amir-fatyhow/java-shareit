@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Setter
 public class Booking {
     @Id
-    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 

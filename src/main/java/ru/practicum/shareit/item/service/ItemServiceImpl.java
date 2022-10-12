@@ -44,11 +44,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(Map<Object, Object> fields, long itemId, long userId) throws JsonMappingException {
-        if (!itemStorage.existsById(itemId)) {
-            throw new ShareItNotFoundException("Вещи с указанным Id не существует.");
-        }
-
-        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException(""));
+        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException("Вещь с указанным Id не существует."));
 
         if (targetItem.getOwnerId() != userId) {
             throw new ShareItNotFoundException("Обновлять вещь может только ее владелец.");
@@ -72,7 +68,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto findById(long itemId, long userId) {
-        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException(""));
+        Item targetItem = itemStorage.findById(itemId).orElseThrow(() -> new ShareItNotFoundException("Вещь с указанным Id не существует."));
 
         Optional<Booking> bookingLast = bookingStorage.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
         Optional<Booking> bookingNext = bookingStorage.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());

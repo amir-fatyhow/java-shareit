@@ -12,16 +12,15 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class Item {
     @Id
-    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "NAME")
+    @Column(name = "NAME", nullable = false)
     @NotBlank
     @NotNull
     private String name;
 
-    @Column(name = "DESCRIPTION", length = 1024)
+    @Column(name = "DESCRIPTION", length = 1024, nullable = false)
     @NotBlank
     @NotNull
     private String description;

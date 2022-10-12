@@ -27,12 +27,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto update(Map<Object,Object> fields, long userId) throws JsonMappingException {
-        if (!userStorage.existsById(userId)) {
-            throw new ShareItNotFoundException("Пользователь с указанным id не существует.");
-        }
-
-        User targetUser = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException(""));
+    public UserDto update(Map<Object, Object> fields, long userId) throws JsonMappingException {
+        User targetUser = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException("Пользователь с указанным id не существует."));
         User updateUser = objectMapper.updateValue(targetUser, fields);
 
         userStorage.save(updateUser);
@@ -41,7 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto findById(long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException(""));
+        User user = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException("Пользователь с указанным id не существует."));
         return UserRowMapper.toUserDto(user);
     }
 

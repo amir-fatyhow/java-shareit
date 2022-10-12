@@ -13,16 +13,15 @@ import javax.validation.constraints.Pattern;
 @Table(name = "USERS")
 public class User {
     @Id
-    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "NAME")
+    @Column(name = "NAME", nullable = false)
     @NotBlank
     @NotNull
     private String name;
 
-    @Column(name = "EMAIL", length = 512, unique = true)
+    @Column(name = "EMAIL", length = 512, unique = true, nullable = false)
     @NotBlank
     @NotNull
     @Pattern(regexp = "^(.+)@(\\S+)$")

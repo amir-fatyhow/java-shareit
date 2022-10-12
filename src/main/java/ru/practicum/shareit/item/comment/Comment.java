@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Setter
 public class Comment {
     @Id
-    @Column(name = "ID")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
