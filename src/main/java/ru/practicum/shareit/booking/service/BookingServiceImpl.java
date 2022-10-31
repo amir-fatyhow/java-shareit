@@ -150,8 +150,7 @@ public class BookingServiceImpl implements BookingService {
         }
         if (from != 0) {
             from -= 1;
-        }
-        
+        }     
         if (state.equals("ALL")) {
             Pageable pageable = FromSizeRequest.of(from, size);
             return bookingRepository.findAllByItemOwner(userId, pageable).stream()
