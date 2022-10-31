@@ -9,20 +9,20 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import ru.practicum.shareit.exception.ShareItNotFoundException;
+import ru.practicum.shareit.exception.BadRequestException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.repositories.ItemStorage;
 import ru.practicum.shareit.request.mapper.RequestMapper;
 import ru.practicum.shareit.request.model.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.dto.RequestWithResponseDto;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
-import ru.practicum.shareit.request.repository.RequestRepository;
+import ru.practicum.shareit.request.repositories.RequestStorage;
 import ru.practicum.shareit.request.service.RequestServiceImpl;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repositories.UserStorage;
+import ru.practicum.shareit.user.services.UserService;
 
-import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -37,22 +37,22 @@ import static org.mockito.Mockito.when;
 public class RequestServiceMockTest {
 
     @Mock
-    private RequestRepository requestRepository;
+    private RequestStorage requestStorage;
 
     @Mock
-    private ItemRepository itemRepository;
+    private ItemStorage itemStorage;
 
     @Mock
     private UserService userService;
 
     @Mock
-    private UserRepository userRepository;
+    private UserStorage userStorage;
 
     private RequestServiceImpl requestService;
 
     @BeforeEach
     void init() {
-        requestService = new RequestServiceImpl(requestRepository, itemRepository, userService);
+        requestService = new RequestServiceImpl(requestStorage, itemStorage, userService);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class RequestServiceMockTest {
 
 
         Mockito.when(userService.checkUser(anyLong())).thenReturn(requestor);
-        Mockito.when(requestRepository.save(any(ItemRequest.class)))
+        Mockito.when(requestStorage.save(any(ItemRequest.class)))
                 .thenReturn(itemRequest);
         // Act
         ItemRequestDto actualItemRequestDto = requestService
@@ -83,7 +83,7 @@ public class RequestServiceMockTest {
         itemRequestDto.setDescription(null);
 
         // Act
-        ValidationException thrown = Assertions.assertThrows(ValidationException.class, () -> {
+        BadRequestException thrown = Assertions.assertThrows(BadRequestException.class, () -> {
             ItemRequestDto actualItemRequestDto = requestService
                     .createRequest(itemRequestDto, requestor.getId());
         });
@@ -98,7 +98,7 @@ public class RequestServiceMockTest {
         User requestor = getTestUser();
         ItemRequest itemRequest = getTestItemRequest(requestor);
 
-        when(requestRepository.findById(anyLong()))
+        when(requestStorage.findById(anyLong()))
                 .thenReturn(Optional.of(itemRequest));
 
         // Act
@@ -117,11 +117,11 @@ public class RequestServiceMockTest {
         User requestor = getTestUser();
         ItemRequest itemRequest = getTestItemRequest(requestor);
 
-        when(requestRepository.findById(anyLong()))
+        when(requestStorage.findById(anyLong()))
                 .thenReturn(Optional.empty());
 
         // Act
-        ShareItNotFoundException thrown = Assertions.assertThrows(ShareItNotFoundException.class, () -> {
+        NotFoundException thrown = Assertions.assertThrows(NotFoundException.class, () -> {
             ItemRequest actualItemRequest = requestService.checkItemRequest(itemRequest.getId());
         });
 
@@ -142,7 +142,7 @@ public class RequestServiceMockTest {
 
         when(userService.checkUser(anyLong()))
                 .thenReturn(requestor);
-        when(requestRepository.findAllByRequestor_IdOrderByCreatedDesc(anyLong(), any(PageRequest.class)))
+        when(requestStorage.findAllByRequestor_IdOrderByCreatedDesc(anyLong(), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(itemRequests));
 
         // Act
@@ -169,7 +169,7 @@ public class RequestServiceMockTest {
 
         when(userService.checkUser(anyLong()))
                 .thenReturn(requestor);
-        when(requestRepository.findAllByRequestorNot(any(User.class), any(PageRequest.class)))
+        when(requestStorage.findAllByRequestorNot(any(User.class), any(PageRequest.class)))
                 .thenReturn(new PageImpl<>(itemRequests));
 
         // Act
@@ -193,9 +193,9 @@ public class RequestServiceMockTest {
 
         when(userService.checkUser(anyLong()))
                 .thenReturn(requestor);
-        when(requestRepository.findById(itemRequest.getId()))
+        when(requestStorage.findById(itemRequest.getId()))
                 .thenReturn(Optional.of(itemRequest));
-        when(itemRepository.findAllByRequest_IdOrderByRequestIdDesc(anyLong()))
+        when(itemStorage.findAllByRequest_IdOrderByRequestIdDesc(anyLong()))
                 .thenReturn(items);
 
         // Act

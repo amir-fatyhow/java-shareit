@@ -6,14 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 @EqualsAndHashCode
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor // Пустой конструктор - обязательное условие для Entity
 @Entity
 @Table(name = "USERS")
 public class User {
@@ -24,13 +21,8 @@ public class User {
     private Long id;
 
     @Column(name = "NAME", nullable = false, length = 255)
-    @NotBlank
-    @NotNull
     private String name;
 
     @Column(name = "EMAIL")
-    @NotBlank
-    @NotNull
-    @Pattern(regexp = "^(.+)@(\\S+)$")
     private String email;
 }

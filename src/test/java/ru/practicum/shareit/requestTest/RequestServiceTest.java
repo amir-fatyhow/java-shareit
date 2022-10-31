@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.item.dto.ItemForRequestDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.item.repositories.ItemStorage;
 import ru.practicum.shareit.request.model.dto.RequestWithResponseDto;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
 import ru.practicum.shareit.request.service.RequestService;
@@ -31,7 +31,7 @@ public class RequestServiceTest {
     private EntityManager entityManager;
 
     @Autowired
-    private ItemRepository itemRepository;
+    private ItemStorage itemStorage;
 
     @Test
     public void getAllResponsesForAllRequestsTest() {

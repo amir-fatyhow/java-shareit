@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.item.services.ItemService;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 @SpringBootTest
 @Transactional
-class ItemServiceTest {
+public class ItemServiceTest {
 
     @Autowired
     private ItemService itemService;
@@ -26,8 +26,8 @@ class ItemServiceTest {
 
     @Test
     void findItemByIdTest() {
-        User user1 = getTestUser("user1@mail");
-        User user2 = getTestUser("user2@mail");
+        User user1 = getTestUser("user1@");
+        User user2 = getTestUser("user2@");
         user1.setId(1L);
         user2.setId(2L);
         ItemRequest itemRequest1 = getTestItemRequest(user1);
@@ -37,7 +37,7 @@ class ItemServiceTest {
         item1.setId(1L);
         item2.setId(2L);
 
-        ItemResponseDto itemResponseDto = itemService.findById(item1.getId(), user1.getId());
+        ItemResponseDto itemResponseDto = itemService.findItemById(item1.getId(), user1.getId());
 
         Assertions.assertNotNull(itemResponseDto);
         Assertions.assertEquals(itemResponseDto.getId(), item1.getId());

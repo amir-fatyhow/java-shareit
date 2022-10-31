@@ -1,28 +1,37 @@
 package ru.practicum.shareit.item.services;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
+import ru.practicum.shareit.item.exceptions.ItemNotFound;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.exceptions.UserNotBooker;
+
 import java.util.List;
-import java.util.Map;
 
 @Service
 public interface ItemService {
-    ItemDto save(ItemDto itemDto, long userId);
 
-    ItemDto update(Map<Object,Object> fields, long itemId, long userId) throws JsonMappingException;
+    ItemDto createItem(ItemDto itemDto, long userId) throws NotFoundException;
 
-    void deleteItem(long itemId);
+    ItemDto updateItem(ItemDto itemDto, long itemId, long userId) throws ItemNotFound, NotFoundException;
 
-    ItemResponseDto findById(long itemId, long userId);
+    void deleteItem(long itemId) throws ItemNotFound;
+
+    List<ItemDto> findAll();
+
+    ItemResponseDto findItemById(long itemId, long userId) throws ItemNotFound;
 
     List<ItemResponseDto> findAllItemsByUserId(long userId, Integer from, Integer size);
 
-    List<ItemDto> search(String text, Integer from, Integer size);
+    List<ItemDto> searchItemsByNameAndDescription(String text, Integer from, Integer size);
 
-    CommentDto postComment(long itemId, long userId, CommentDto text);
+    Item checkItem(long itemId);
+
+    CommentDto postComment(long itemId, long userId, CommentDto text)
+            throws NotFoundException, ItemNotFound, UserNotBooker;
 
     List<CommentDto> getAllCommentsByItem(long itemId);
 }

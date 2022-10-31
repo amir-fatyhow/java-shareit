@@ -8,13 +8,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.user.controller.UserController;
+import ru.practicum.shareit.user.controllers.UserController;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.services.UserService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +46,7 @@ public class UserControllerTest {
         UserDto userDto = new UserDto(1L, "Test UserDto Name", "testUserDto@email.ru");
 
         // Так как мы тестируем только контроллеры, то сервис надо замокать
-        when(userService.save(any(UserDto.class)))
+        when(userService.createUser(any(UserDto.class)))
                 .thenReturn(userDto);
 
         // Act
@@ -58,6 +57,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON) // Возвращаем json
                         .accept(MediaType.APPLICATION_JSON)) // принимаем json
                 // Assert
+                .andExpect(status().isCreated()) // Должен прийти ответ 201
                 .andExpect(jsonPath("$.id").value(userDto.getId()))
                 .andExpect(jsonPath("$.name").value(userDto.getName()))
                 .andExpect(jsonPath("$.email").value(userDto.getEmail())
@@ -69,7 +69,7 @@ public class UserControllerTest {
         // Assign
         UserDto userDto = new UserDto(1L, "Test UserDto Name", "testUserDto@email.ru");
 
-        when(userService.update(any(Map.class), anyLong()))
+        when(userService.updateUser(any(UserDto.class), anyLong()))
                 .thenReturn(userDto);
 
         // Act
@@ -122,7 +122,7 @@ public class UserControllerTest {
         UserDto userDto3 = new UserDto(3L, "Test UserDto Name 3", "testUserDto3@email.ru");
         List<UserDto> users = List.of(userDto1, userDto2, userDto3);
 
-        when(userService.findAll())
+        when(userService.findAllUsers())
                 .thenReturn(users);
 
         // Act
