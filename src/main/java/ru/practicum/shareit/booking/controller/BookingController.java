@@ -48,7 +48,6 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
-    @ResponseStatus(HttpStatus.OK)
     public List<BookingResponseDto> findOwnerItems(
             @RequestParam(defaultValue = "ALL") String state,
             @RequestHeader("X-Sharer-User-Id") long userId,
