@@ -1,16 +1,31 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.exception.ShareItNotFoundException;
 import java.util.List;
 
+@Service
 public interface BookingService {
-    BookingDto save(BookingDto bookingDto, long bookerId);
 
-    BookingDto update(long bookingId, long ownerId, boolean approved);
+    BookingResponseDto save(BookingDto bookingDto, long userId)
+            throws ShareItNotFoundException;
 
-    BookingDto findById(long bookingId, long userId);
+    BookingResponseDto update(long bookingId, long userId, boolean approved)
+            throws ShareItNotFoundException;
 
-    List<BookingDto> findByState(long userId, String state);
+    BookingResponseDto findById(long bookingId, long userID)
+            throws ShareItNotFoundException;
 
-    List<BookingDto> findOwnerItems(long ownerId, String state);
+    List<BookingResponseDto> findByState(String state, long userId, Integer from, Integer size)
+            throws ShareItNotFoundException;
+
+    List<BookingResponseDto> findOwnerItems(String state, long userId, Integer from, Integer size)
+            throws ShareItNotFoundException;
+
+    /*Booking getLastBookingByItem(long itemId);
+
+    Booking getNextBookingByItem(long itemId);*/
+
 }

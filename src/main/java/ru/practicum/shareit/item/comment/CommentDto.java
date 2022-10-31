@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class CommentDto {
+
     private long id;
 
     @NotNull

@@ -2,52 +2,71 @@ package ru.practicum.shareit.user.service;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ShareItNotFoundException;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserRowMapper;
-import ru.practicum.shareit.user.repositories.UserStorage;
+import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private static final String USER_NOT_FOUND = "Пользователя с указанным Id не существует.";
 
     @Override
+    @Transactional
     public UserDto save(UserDto userDto) {
-        User user = userStorage.save(UserRowMapper.toUser(userDto));
-        return UserRowMapper.toUserDto(user);
+        /*if (userDto.getEmail() == null || userDto.getEmail().isEmpty() || !userDto.getEmail().contains("@")) {
+            throw new BadRequestException("BAD EMAIL");
+        }*/
+        User user = userRepository.save(UserMapper.toUser(userDto));
+        return UserMapper.toUserDto(user);
     }
 
     @Override
+    @Transactional
     public UserDto update(Map<Object, Object> fields, long userId) throws JsonMappingException {
-        User targetUser = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException("Пользователь с указанным id не существует."));
-        User updateUser = objectMapper.updateValue(targetUser, fields);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShareItNotFoundException(USER_NOT_FOUND));
+        user = objectMapper.updateValue(user, fields);
 
-        userStorage.save(updateUser);
-        return UserRowMapper.toUserDto(updateUser);
+        userRepository.save(user);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto findById(long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new ShareItNotFoundException("Пользователь с указанным id не существует."));
-        return UserRowMapper.toUserDto(user);
+    @Transactional
+    public void deleteById(long userId) {
+        User user = checkUser(userId);
+        userRepository.delete(user);
     }
 
     @Override
     public List<UserDto> findAll() {
-        return UserRowMapper.toUserDto(userStorage.findAll());
+        return userRepository.findAll().stream()
+                .map(user -> new UserDto(user.getId(), user.getName(), user.getEmail()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteById(long userId) {
-        userStorage.deleteById(userId);
+    public UserDto findUserById(long userId) {
+        User user = checkUser(userId);
+        return UserMapper.toUserDto(user);
+    }
+
+    @Override
+    public User checkUser(long userId) throws ShareItNotFoundException {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ShareItNotFoundException(String.format("User by ID: %s not found", userId)));
     }
 }
