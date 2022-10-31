@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.services.ItemService;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 

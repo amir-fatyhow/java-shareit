@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -47,6 +48,7 @@ public class BookingController {
     }
 
     @GetMapping("/owner")
+    @ResponseStatus(HttpStatus.OK)
     public List<BookingResponseDto> findOwnerItems(
             @RequestParam(defaultValue = "ALL") String state,
             @RequestHeader("X-Sharer-User-Id") long userId,

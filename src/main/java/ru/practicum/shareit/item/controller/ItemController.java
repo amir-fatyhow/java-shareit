@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
-import ru.practicum.shareit.item.services.ItemService;
+import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;

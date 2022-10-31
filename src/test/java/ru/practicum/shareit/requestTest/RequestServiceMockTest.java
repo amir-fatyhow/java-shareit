@@ -16,7 +16,7 @@ import ru.practicum.shareit.request.mapper.RequestMapper;
 import ru.practicum.shareit.request.model.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.dto.RequestWithResponseDto;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
-import ru.practicum.shareit.request.repositories.RequestRepository;
+import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.request.service.RequestServiceImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;

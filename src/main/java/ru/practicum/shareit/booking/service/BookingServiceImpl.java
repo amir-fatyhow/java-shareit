@@ -8,7 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.repositories.BookingRepository;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ShareItNotFoundException;
 import ru.practicum.shareit.exception.UnsupportedStatus;
 import ru.practicum.shareit.item.model.Item;
@@ -147,9 +147,6 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDto> findOwnerItems(String state, long userId, Integer from, Integer size) {
         if (!userRepository.existsById(userId)) {
             throw new ShareItNotFoundException(USER_NOT_FOUND);
-        }
-        if (from != 0) {
-            from -= 1;
         }
         if (state.equals("ALL")) {
             Pageable pageable = FromSizeRequest.of(from, size);
