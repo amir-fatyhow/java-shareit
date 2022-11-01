@@ -26,9 +26,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto save(UserDto userDto) {
-        /*if (userDto.getEmail() == null || userDto.getEmail().isEmpty() || !userDto.getEmail().contains("@")) {
-            throw new BadRequestException("BAD EMAIL");
-        }*/
         User user = userRepository.save(UserMapper.toUser(userDto));
         return UserMapper.toUserDto(user);
     }
@@ -47,8 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteById(long userId) {
-        User user = checkUser(userId);
-        userRepository.delete(user);
+        userRepository.deleteById(userId);
     }
 
     @Override
@@ -59,14 +55,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto findUserById(long userId) {
-        User user = checkUser(userId);
+    public UserDto findById(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShareItNotFoundException(USER_NOT_FOUND));
         return UserMapper.toUserDto(user);
     }
 
-    @Override
-    public User checkUser(long userId) throws ShareItNotFoundException {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ShareItNotFoundException(String.format("User by ID: %s not found", userId)));
-    }
 }

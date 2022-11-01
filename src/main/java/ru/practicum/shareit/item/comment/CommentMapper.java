@@ -20,12 +20,6 @@ public class CommentMapper {
         );
     }
 
-    public static Comment toComment(CommentDto commentDto) {
-        Comment comment = new Comment();
-        comment.setText(commentDto.getText());
-        return comment;
-    }
-
     public static List<CommentDto> toCommentDtos(List<Comment> comments) {
         return comments.stream().map(CommentMapper::toCommentDto).collect(Collectors.toList());
     }

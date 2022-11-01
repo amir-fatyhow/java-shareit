@@ -20,6 +20,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "AND I.AVAILABLE = TRUE)", nativeQuery = true)
     Page<Item> findAllByNameAndDescriptionLowerCase(String name, String description, Pageable pageable);
 
-    List<Item> findAllByRequest_IdOrderByRequestIdDesc(long requestId);
+    List<Item> findAllByRequestIdOrderByRequestIdDesc(long requestId);
 
 }

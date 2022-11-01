@@ -82,7 +82,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ShareItNotFoundException(USER_NOT_FOUND));
 
         List<CommentDto> comments = CommentMapper
-                .toCommentDtos(commentRepository.getCommentsByItem_idOrderByCreatedDesc(itemId));
+                .toCommentDtos(commentRepository.findAllByItemIdOrderByCreatedDesc(itemId));
         if (user.equals(item.getOwner())) {
             Booking lastBooking = bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(itemId, LocalDateTime.now());
             Booking nextBooking = bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(itemId, LocalDateTime.now());
@@ -100,7 +100,7 @@ public class ItemServiceImpl implements ItemService {
         Page<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(owner.getId(), PageRequest.of(from, size));
         for (Item item : items) {
             List<CommentDto> comments = CommentMapper
-                    .toCommentDtos(commentRepository.getCommentsByItem_idOrderByCreatedDesc(item.getId()));
+                    .toCommentDtos(commentRepository.findAllByItemIdOrderByCreatedDesc(item.getId()));
             itemResponseDtos.add(ItemMapper.toItemResponseDto(item,
                     bookingRepository.findFirstByItemIdAndStartBeforeOrderByStartDesc(item.getId(), LocalDateTime.now()),
                     bookingRepository.findFirstByItemIdAndStartAfterOrderByStart(item.getId(), LocalDateTime.now()),
@@ -143,7 +143,7 @@ public class ItemServiceImpl implements ItemService {
         if (!itemRepository.existsById(itemId)) {
             throw new ShareItNotFoundException(ITEM_NOT_FOUND);
         }
-        List<Comment> comments = commentRepository.getCommentsByItem_idOrderByCreatedDesc(itemId);
+        List<Comment> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(itemId);
         return comments.stream().map(CommentMapper::toCommentDto).collect(Collectors.toList());
     }
 

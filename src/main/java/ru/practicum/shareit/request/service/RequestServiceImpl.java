@@ -15,12 +15,9 @@ import ru.practicum.shareit.request.model.dto.RequestWithResponseDto;
 import ru.practicum.shareit.request.model.entity.ItemRequest;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
-
-import javax.validation.ValidationException;
+import ru.practicum.shareit.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,52 +26,50 @@ public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
     private final ItemRepository itemRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
+
+    private static final String USER_NOT_FOUND = "Пользователя с указанным Id не существует.";
+    private static final String REQUEST_NOT_FOUND = "Запрос с указанным Id не существует.";
 
     @Override
-    public ItemRequestDto createRequest(ItemRequestDto itemRequestDto, long userId)
-            throws ShareItNotFoundException {
-        if (itemRequestDto.getDescription() == null || itemRequestDto.getDescription().isEmpty()) {
-            throw new ValidationException("ItemRequest Description is empty");
-        }
-        User requester = userService.checkUser(userId);
+    public ItemRequestDto save(ItemRequestDto itemRequestDto, long userId) {
+        User requester = userRepository.findById(userId)
+                .orElseThrow(() -> new ShareItNotFoundException(USER_NOT_FOUND));
+
         ItemRequest itemRequest = RequestMapper.toItemRequest(itemRequestDto, requester);
-        requestRepository.save(itemRequest);
+        itemRequest = requestRepository.save(itemRequest);
         return RequestMapper.toItemRequestDto(itemRequest);
     }
 
     @Override
-    public ItemRequest checkItemRequest(long itemRequestId) throws ShareItNotFoundException {
-        Optional<ItemRequest> optionalItemRequest = requestRepository.findById(itemRequestId);
-        if (optionalItemRequest.isPresent()) {
-            return optionalItemRequest.get();
-        } else {
-            throw new ShareItNotFoundException(String.format("ItemRequest by ID: %s  - not found", itemRequestId));
+    public List<RequestWithResponseDto> findAllResponsesForAllRequests(long userId, Integer from, Integer size) {
+        if (!userRepository.existsById(userId)) {
+            throw new ShareItNotFoundException(USER_NOT_FOUND);
         }
-    }
-
-    @Override
-    public List<RequestWithResponseDto> getAllResponsesForAllRequests(long userId, Integer from, Integer size)
-            throws ShareItNotFoundException {
-        userService.checkUser(userId);
-        Page<ItemRequest> itemRequests = requestRepository.findAllByRequestor_IdOrderByCreatedDesc(
+        Page<ItemRequest> itemRequests = requestRepository.findAllByRequestorIdOrderByCreatedDesc(
                 userId, PageRequest.of(from, size));
         return getRequestWithResponseDto(itemRequests.toList());
     }
 
     @Override
-    public List<RequestWithResponseDto> getAllRequestsOtherUsers(long userId, Integer from, Integer size)
-            throws ShareItNotFoundException {
-        User user = userService.checkUser(userId);
+    public List<RequestWithResponseDto> findAllByUserId(long userId, Integer from, Integer size) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ShareItNotFoundException(USER_NOT_FOUND));
+
         Page<ItemRequest> itemRequests = requestRepository.findAllByRequestorNot(user, PageRequest.of(from, size));
         return getRequestWithResponseDto(itemRequests.toList());
     }
 
     @Override
-    public RequestWithResponseDto getRequestById(long userId, long requestId) {
-        userService.checkUser(userId);
-        ItemRequest itemRequest = checkItemRequest(requestId);
-        List<Item> items = itemRepository.findAllByRequest_IdOrderByRequestIdDesc(itemRequest.getId());
+    public RequestWithResponseDto findById(long userId, long requestId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ShareItNotFoundException(USER_NOT_FOUND);
+        }
+
+        ItemRequest itemRequest = requestRepository.findById(requestId)
+                .orElseThrow(() -> new ShareItNotFoundException(REQUEST_NOT_FOUND));
+
+        List<Item> items = itemRepository.findAllByRequestIdOrderByRequestIdDesc(itemRequest.getId());
         List<ItemForRequestDto> requests = items.stream()
                 .map(ItemMapper::toItemForRequestDto)
                 .collect(Collectors.toList());
@@ -84,7 +79,7 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestWithResponseDto> getRequestWithResponseDto(List<ItemRequest> itemRequests) {
         List<RequestWithResponseDto> requestWithResponseDtos = new ArrayList<>();
         for (ItemRequest itemRequest : itemRequests) {
-            List<Item> items = itemRepository.findAllByRequest_IdOrderByRequestIdDesc(itemRequest.getId());
+            List<Item> items = itemRepository.findAllByRequestIdOrderByRequestIdDesc(itemRequest.getId());
             List<ItemForRequestDto> requests = items.stream()
                     .map(ItemMapper::toItemForRequestDto)
                     .collect(Collectors.toList());

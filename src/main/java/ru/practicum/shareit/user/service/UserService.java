@@ -2,10 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.ShareItNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.model.User;
-
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +17,6 @@ public interface UserService {
 
     List<UserDto> findAll();
 
-    UserDto findUserById(long userId);
-
-    User checkUser(long userId) throws ShareItNotFoundException;
-
+    UserDto findById(long userId);
 
 }
