@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="10.3">
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\booking\BookingController.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\booking\dto\BookingState.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\booking\dto\BookItemRequestDto.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\client\BaseClient.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\handler\ErrorHandler.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\item\ItemController.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\request\RequestController.java">
+</file>
+<file name="D:\sheme-docker\java-shareit-add-docker\gateway\src\main\java\ru\practicum\shareit\ShareItGateway.java">
+</file>
+</checkstyle>
